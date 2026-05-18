@@ -1,5 +1,5 @@
 {
-  "name": "bsv-1.5.6-hardened",
+  "name": "bsv-365",
   "version": "1.5.6-hardened.0",
   "description": "Hardened drop-in fork of bsv@1.5.6 with patched elliptic and defense-in-depth signature validation. Same public API as bsv@1.5.6.",
   "main": "index.js",

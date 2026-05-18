@@ -29,7 +29,7 @@ Use this if you depend on the `bsv@1.x` interface but want the security posture 
 Existing call sites work as-is:
 
 ```js
-const bsv = require('bsv-1.5.6-hardened')
+const bsv = require('bsv-365')
 const priv = bsv.PrivateKey.fromRandom()
 const sig  = bsv.crypto.ECDSA.sign(hash, priv)
 const ok   = bsv.crypto.ECDSA.verify(hash, sig, priv.publicKey)
@@ -40,7 +40,7 @@ All new functionality is additive. Nothing has been renamed or removed.
 ## Install
 
 ```bash
-npm install bsv-1.5.6-hardened
+npm install bsv-365
 ```
 
 Or directly from this repo:
