@@ -1,0 +1,24 @@
+{
+  "name": "bsv-1.5.6-hardened",
+  "version": "1.5.6-hardened.0",
+  "description": "Hardened drop-in fork of bsv@1.5.6 with patched elliptic and defense-in-depth signature validation. Same public API as bsv@1.5.6.",
+  "main": "index.js",
+  "types": "bsv.d.ts",
+  "scripts": {
+    "test": "node test-smoke.js"
+  },
+  "browser": {
+    "request": "browser-request"
+  },
+  "dependencies": {
+    "aes-js": "^3.1.2",
+    "bn.js": "^4.12.3",
+    "bs58": "=4.0.1",
+    "clone-deep": "^4.0.1",
+    "elliptic": "^6.6.1",
+    "hash.js": "^1.1.7",
+    "inherits": "2.0.3",
+    "unorm": "1.4.1"
+  },
+  "license": "MIT"
+}
