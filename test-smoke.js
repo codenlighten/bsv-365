@@ -128,5 +128,59 @@ ok('build, sign, and verify a P2PKH tx', () => {
   assert.ok(round.inputs[0].script.toBuffer().length > 0, 'no scriptSig')
 })
 
+// --- 7. CSPRNG shuffle ------------------------------------------------------
+console.log('\nCSPRNG shuffle:')
+const _u = require('./lib/util/_')
+ok('shuffle returns a permutation of input', () => {
+  const input = [1, 2, 3, 4, 5, 6, 7, 8, 9, 10]
+  const out = _u.shuffle(input)
+  assert.strictEqual(out.length, input.length)
+  assert.deepStrictEqual(out.slice().sort((a, b) => a - b), input)
+  // Input must not be mutated.
+  assert.deepStrictEqual(input, [1, 2, 3, 4, 5, 6, 7, 8, 9, 10])
+})
+ok('shuffle produces varying orders across runs (not deterministic)', () => {
+  const input = [0, 1, 2, 3, 4, 5, 6, 7]
+  const seen = new Set()
+  for (let i = 0; i < 50; i++) seen.add(_u.shuffle(input).join(','))
+  // 50 shuffles of 8 items: should see lots of distinct orderings.
+  assert.ok(seen.size > 30, 'shuffle suspiciously low entropy: ' + seen.size)
+})
+ok('shuffle of empty/single-item arrays is safe', () => {
+  assert.deepStrictEqual(_u.shuffle([]), [])
+  assert.deepStrictEqual(_u.shuffle([42]), [42])
+})
+
+// --- 8. ECIES round-trip and tamper rejection -------------------------------
+console.log('\nECIES (electrum + bitcore):')
+const ECIES = require('./ecies')
+ok('electrum ECIES round-trips a message', () => {
+  const a = PrivateKey.fromRandom()
+  const b = PrivateKey.fromRandom()
+  const ecies = new ECIES().privateKey(a).publicKey(b.publicKey)
+  const ct = ecies.encrypt('hello bsv-365')
+  const eciesB = new ECIES().privateKey(b).publicKey(a.publicKey)
+  const pt = eciesB.decrypt(ct)
+  assert.strictEqual(pt.toString(), 'hello bsv-365')
+})
+ok('electrum ECIES rejects tampered ciphertext (timingSafeEqual)', () => {
+  const a = PrivateKey.fromRandom()
+  const b = PrivateKey.fromRandom()
+  const ecies = new ECIES().privateKey(a).publicKey(b.publicKey)
+  const ct = Buffer.from(ecies.encrypt('hello bsv-365'))
+  // Flip a bit in the MAC region (last byte).
+  ct[ct.length - 1] ^= 0x01
+  const eciesB = new ECIES().privateKey(b).publicKey(a.publicKey)
+  assert.throws(() => eciesB.decrypt(ct), /Invalid checksum/)
+})
+ok('electrum ECIES rejects truncated ciphertext without crashing', () => {
+  const a = PrivateKey.fromRandom()
+  const b = PrivateKey.fromRandom()
+  const ecies = new ECIES().privateKey(a).publicKey(b.publicKey)
+  const ct = ecies.encrypt('hello bsv-365')
+  const eciesB = new ECIES().privateKey(b).publicKey(a.publicKey)
+  assert.throws(() => eciesB.decrypt(ct.slice(0, 10)))
+})
+
 console.log(`\nResult: ${pass} passed, ${fail} failed`)
 process.exit(fail === 0 ? 0 : 1)
